@@ -28,7 +28,7 @@ int main(){
     printf("Homework 4: Yasirul Choudhury, orb234\n\n");
 
     for(double t = 0; t < 5; t += 0.1){
-        printf("Time: %lf s, Output Voltage: %lf V \n", t, RCcircuit(V, R, C, t));
+        printf("%.2lf,%.2lf\n", t, RCcircuit(V, R, C, t));
     }
     
     keypress();
