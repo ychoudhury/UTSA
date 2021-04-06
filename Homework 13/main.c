@@ -115,7 +115,7 @@ int main(){
     x = complexInit(1, 1);
     y = complexInit(3, 2);
     w = scalarMultiplication(-1, y);
-    Print(Addition(w, y));
+    Print(Addition(x, w));
 
     x = complexInit(4, 5);
     Print(scalarMultiplication(3, x));
