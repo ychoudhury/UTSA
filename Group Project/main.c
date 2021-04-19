@@ -30,6 +30,17 @@ struct _state{
 };
 typedef struct _date State; // refers to struct as State instead of the entire struct
 
+int chooseMode(char input[1]){
+    if(strcmp(input, "Y") == 0 || strcmp(input, "y") == 0){
+        printf("Manual control\n");
+        return 1;
+    }
+    else if(strcmp(input, "N") == 0 || strcmp(input, "n") == 0){
+        printf("Automatic control\n");
+        return 0;
+    }
+}
+
 int validateInput(char input[1]){ // returns 1 if valid Y/N input is provided by user
     printf("Welcome to the Lunar Lander console\nWould you like to manually control the lander?\nPress Y for yes\nPress N for no\n");
     scanf("%s", input);
@@ -37,10 +48,9 @@ int validateInput(char input[1]){ // returns 1 if valid Y/N input is provided by
         printf("Error: Invalid Input. You're an astronaut, you know better! Try again.\n");
         scanf("%s", input);
     }
-
     return 1;
-
 }
+
 
 int checkThrust(int givenThrust){
     givenThrust *= 1000;
@@ -51,12 +61,9 @@ int checkThrust(int givenThrust){
 }
 
 int main(){
-    char choice[1];
-    if(validateInput(&choice[1]) ==1){
-        printf("Success!\n");
-    }; // passes 1 character (+ null terminator) string to check for valid Y/N input
-
-
+    char choice[1]; // passes 1 character (+ null terminator) string to check for valid Y/N input
+    validateInput(&choice[1]);
+    chooseMode(&choice[1]);
 
     keypress();
     return 0;
