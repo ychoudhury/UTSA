@@ -32,11 +32,11 @@ typedef struct _date State; // refers to struct as State instead of the entire s
 
 int chooseMode(char input[1]){
     if(strcmp(input, "Y") == 0 || strcmp(input, "y") == 0){
-        printf("Manual control\n");
+        printf("Selected: Game Mode\n");
         return 1;
     }
     else if(strcmp(input, "N") == 0 || strcmp(input, "n") == 0){
-        printf("Automatic control\n");
+        printf("Selected: Autopilot\n");
         return 0;
     }
 }
@@ -61,9 +61,12 @@ int checkThrust(int givenThrust){
 }
 
 int main(){
-    char choice[1]; // passes 1 character (+ null terminator) string to check for valid Y/N input
+    char choice[1]; 
+    // passes 1 character (+ null terminator) string to check for valid Y/N input
     validateInput(&choice[1]);
+    // now that string is sanitized, pass it and determine which mode is chosen
     chooseMode(&choice[1]);
+    FILE* output = fopen("output.csv", "wt");
 
     keypress();
     return 0;
