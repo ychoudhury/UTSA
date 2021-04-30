@@ -22,13 +22,25 @@
 
 // global current state struct definition
 struct _state{
-    double state;
+    double altitude;
     double velocity;
-    double acceleration;
-    double mass;
     double fuel;
+    double mass;
 };
-typedef struct _date State; // refers to struct as State instead of the entire struct
+typedef struct _state State; // refers to struct as State instead of the entire struct
+
+// Moon's gravity
+const double gravity = -1.6;
+
+int validateInput(char input[1]){ // returns 1 if valid Y/N input is provided by user
+    printf("Welcome to the Lunar Lander console\nWould you like to manually control the lander?\nPress Y for yes\nPress N for no\n");
+    scanf("%s", input);
+    while(strcmp(input, "Y") != 0 && strcmp(input, "y") != 0 && strcmp(input, "N") != 0 && strcmp(input, "n") != 0){
+        printf("Error: Invalid Input. You're an astronaut, you know better! Try again.\n");
+        scanf("%s", input);
+    }
+    return 1;
+}
 
 int chooseMode(char input[1]){
     if(strcmp(input, "Y") == 0 || strcmp(input, "y") == 0){
@@ -41,33 +53,109 @@ int chooseMode(char input[1]){
     }
 }
 
-int validateInput(char input[1]){ // returns 1 if valid Y/N input is provided by user
-    printf("Welcome to the Lunar Lander console\nWould you like to manually control the lander?\nPress Y for yes\nPress N for no\n");
-    scanf("%s", input);
-    while(strcmp(input, "Y") != 0 && strcmp(input, "y") != 0 && strcmp(input, "N") != 0 && strcmp(input, "n") != 0){
-        printf("Error: Invalid Input. You're an astronaut, you know better! Try again.\n");
-        scanf("%s", input);
+double maxThrust(double fuel){ 
+
+    double max = (fuel * 3000);
+    if(max > 45000){
+        return 45000;
     }
-    return 1;
+
+    else if(max < 0){
+        return 0;
+    }
+
+    return max;
 }
 
+void updateState(State* s, double thrust){
 
-int checkThrust(int givenThrust){
-    givenThrust *= 1000;
-    if(givenThrust > 45000){
-        printf("Error: too much thrust");
+    double newAcceleration = ((thrust / s->mass) + gravity);
+
+    s->mass -= (thrust / 3000);
+    s->fuel -= (thrust / 3000);
+
+    s->velocity += newAcceleration;
+    s->altitude += s->velocity;
+}
+
+double Autopilot(State s){
+
+    double vf = -0.9;
+    double Hf = 5;
+
+    if(s.velocity > 0){
         return 0;
+    }
+
+    else if(s.altitude > Hf){
+        double ad = (((s.velocity * s.velocity) - (vf * vf)) / (2 * (s.altitude - Hf)));
+        return (s.mass * (ad - gravity));
+    }
+
+    else{
+        return (-s.mass * gravity * (s.velocity / vf)); // double check this one, with regards to -s.mass. Is that alowed?
     }
 }
 
 int main(){
+    int time = 0;
+    double thrust = 0;
+    double accel = 0;
+    char autoFlag;
+
+    FILE* output = fopen("output.csv", "wt");
+
+    State s = {15000, -325, 1800, 9000}; // initial state init
+    
+
     char choice[1]; 
     // passes 1 character (+ null terminator) string to check for valid Y/N input
     validateInput(&choice[1]);
-    // now that string is sanitized, pass it and determine which mode is chosen
-    chooseMode(&choice[1]);
-    FILE* output = fopen("output.csv", "wt");
 
+    // display initial struct state
+    printf("Altitude: %5.0lf    Velocity: %6.1lf    Mass: %6.1lf    Fuel: %.2lf\n", s.altitude, s.velocity, s.mass, s.fuel);
+    fprintf(output, "%d,%.0lf,%.1lf,%.1lf\n", time++, thrust, s.altitude, (s.velocity * -100));
+
+
+
+    while(s.altitude > 0){
+        int input;
+
+        // N indicates autopilot mode has been chosen
+        if(strcmp(choice, "N") == 0 || strcmp(choice, "n") == 0){
+            thrust = Autopilot(s);
+        }
+        else{
+                        
+            printf("Enter thrust in kN: \n");
+            scanf("%i", &input);
+            thrust = ((double)input * 1000);
+
+
+            double max = maxThrust(s.fuel);
+            if(thrust > max){
+                thrust = max;
+            }
+            else if(thrust < 0){
+                thrust = 0;
+            }
+
+            updateState(&s, thrust);
+            printf("Thrust: %5.0lf  Altitude: %5.1lf    Velocity: %6.1lf    Mass: %6.1lf    Fuel: %.2lf\n", thrust, s.altitude, s.velocity, s.mass, s.fuel);
+            fprintf(output, "%d,%.0lf,%.1lf,%.1lf\n", time++, thrust, s.altitude, (s.velocity * -100));
+        }
+    }
+
+    printf("\n");
+    if(s.velocity >= 1.1){
+        printf("Touchdown!\n");
+    }
+
+    else{
+        printf("Crash\n");
+    }
+    fclose(output);
+    
     keypress();
     return 0;
 }
