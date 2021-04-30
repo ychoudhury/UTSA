@@ -133,6 +133,7 @@ int main(){
     printf("Altitude: %5.0lf    Velocity: %6.1lf    Mass: %6.1lf    Fuel: %.2lf\n", s.altitude, s.velocity, s.mass, s.fuel);
     fprintf(output, "%d,%.0lf,%.1lf,%.1lf\n", time++, thrust, s.altitude, (s.velocity * -100));
 
+    // main loop
     while(s.altitude > 0){
 
         // N indicates autopilot mode has been chosen
@@ -143,8 +144,7 @@ int main(){
             int input;
             printf("Enter thrust in kN: ");
             scanf("%i", &input);
-            thrust = ((double)input * 1000);
-
+            thrust = ((double)input * 1000); //typecasting to bridge different data types
 
             double max = maxThrust(s.fuel);
             if(thrust > max){
