@@ -66,6 +66,19 @@ double maxThrust(double fuel){
     return max;
 }
 
+double limitAutoThrust(double thrust){
+    if(thrust > 45000){
+        return 45000;
+    }
+
+    else if(thrust < 0){
+        return 0;
+    }
+    else{
+        return thrust;
+    }
+}
+
 void updateState(State* s, double thrust){
 
     double newAcceleration = ((thrust / s->mass) + gravity);
@@ -82,28 +95,23 @@ double Autopilot(State s){
     double vf = -0.9;
     double Hf = 5;
 
-    if(s.velocity > 0){ // do nothing if velocity is positive to avoid never landing
+    if(s.velocity > 0){ // do nothing if velocity is positive to avoid flying away
         return 0;
     }
 
     else if(s.altitude > Hf){
         double ad = (((s.velocity * s.velocity) - (vf * vf)) / (2 * (s.altitude - Hf)));
-        if((s.mass * (ad - gravity)) > 45000){
-            return 45000;
-        }
-        else{
-            return s.mass * (ad - gravity);
-        }
+        return limitAutoThrust(s.mass * (ad - gravity));
     }
 
     else{
-        return (-s.mass * gravity * (s.velocity / vf));
+        return limitAutoThrust(-s.mass * gravity * (s.velocity / vf));
     }
 }
 
 int main(){
     char choice[1];
-    int autoFlag;
+    int isAuto;
     int time = 0;
     double thrust = 0;
 
@@ -115,10 +123,10 @@ int main(){
     validateInput(choice);
 
     if(chooseMode(choice) == 1){
-        autoFlag = 1;
+        isAuto = 1;
     }
     else{
-        autoFlag = 0;
+        isAuto = 0;
     }
 
     // display initial struct state
@@ -129,7 +137,7 @@ int main(){
         int input;
 
         // N indicates autopilot mode has been chosen
-        if(autoFlag == 1){
+        if(isAuto == 1){
             thrust = Autopilot(s);
         }
         else{
@@ -154,6 +162,7 @@ int main(){
     }
 
     printf("\n");
+
     if(s.velocity >= -1 && s.velocity <= 0){
         printf("Touchdown!\n");
     }
