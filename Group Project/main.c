@@ -53,8 +53,7 @@ int chooseMode(char input[1]){
     }
 }
 
-double maxThrust(double fuel){ 
-
+double maxThrust(double fuel){
     double max = (fuel * 3000);
     if(max > 45000){
         return 45000;
@@ -98,36 +97,49 @@ double Autopilot(State s){
 }
 
 int main(){
+    char choice[1];
+    int autoFlag;
     int time = 0;
     double thrust = 0;
     double accel = 0;
-    char autoFlag;
+
 
     FILE* output = fopen("output.csv", "wt");
 
     State s = {15000, -325, 1800, 9000}; // initial state init
     
-
-    char choice[1]; 
+    printf("Welcome to the Lunar Lander console\nWould you like to manually control the lander?\nPress Y for yes\nPress N for no\n");
+    scanf("%s", choice);
     // passes 1 character (+ null terminator) string to check for valid Y/N input
-    validateInput(&choice[1]);
+    while(strcmp(choice, "Y") != 0 && strcmp(choice, "y") != 0 && strcmp(choice, "N") != 0 && strcmp(choice, "n") != 0){
+        printf("Error: Invalid Input. You're an astronaut, you know better! Try again.\n");
+        scanf("%s", choice);
+    }
+
+    if (strcmp(choice, "Y") == 0 || strcmp(choice, "y") == 0){
+        autoFlag = 0;
+ 
+    }
+    else if (strcmp(choice, "N") == 0 || strcmp(choice, "n") == 0){
+        autoFlag = 1;
+    }
 
     // display initial struct state
     printf("Altitude: %5.0lf    Velocity: %6.1lf    Mass: %6.1lf    Fuel: %.2lf\n", s.altitude, s.velocity, s.mass, s.fuel);
     fprintf(output, "%d,%.0lf,%.1lf,%.1lf\n", time++, thrust, s.altitude, (s.velocity * -100));
 
-
+    printf("Autoflag = %i\n", autoFlag);
 
     while(s.altitude > 0){
         int input;
 
         // N indicates autopilot mode has been chosen
-        if(strcmp(choice, "N") == 0 || strcmp(choice, "n") == 0){
+        if(autoFlag == 1){
             thrust = Autopilot(s);
         }
         else{
                         
-            printf("Enter thrust in kN: \n");
+            printf("Enter thrust in kN: ");
             scanf("%i", &input);
             thrust = ((double)input * 1000);
 
@@ -139,11 +151,11 @@ int main(){
             else if(thrust < 0){
                 thrust = 0;
             }
-
-            updateState(&s, thrust);
-            printf("Thrust: %5.0lf  Altitude: %5.1lf    Velocity: %6.1lf    Mass: %6.1lf    Fuel: %.2lf\n", thrust, s.altitude, s.velocity, s.mass, s.fuel);
-            fprintf(output, "%d,%.0lf,%.1lf,%.1lf\n", time++, thrust, s.altitude, (s.velocity * -100));
         }
+
+        updateState(&s, thrust);
+        printf("Thrust: %5.0lf  Altitude: %5.1lf    Velocity: %6.1lf    Mass: %6.1lf    Fuel: %.2lf\n", thrust, s.altitude, s.velocity, s.mass, s.fuel);
+        fprintf(output, "%d,%.0lf,%.1lf,%.1lf\n", time++, thrust, s.altitude, (s.velocity * -100));
     }
 
     printf("\n");
@@ -154,8 +166,8 @@ int main(){
     else{
         printf("Crash\n");
     }
+
     fclose(output);
-    
     keypress();
     return 0;
 }
