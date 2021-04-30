@@ -32,7 +32,7 @@ typedef struct _state State; // refers to struct as State instead of the entire 
 // Moon's gravity
 const double gravity = -1.6;
 
-int validateInput(char input[1]){ // returns 1 if valid Y/N input is provided by user
+int validateInput(char input[1]){ // sanitizes input and returns 1 if valid Y/N is provided by user
     printf("Welcome to the Lunar Lander console\nWould you like to engage autopilot?\nPress Y for yes\nPress N for no\n");
     scanf("%s", input);
     while(strcmp(input, "Y") != 0 && strcmp(input, "y") != 0 && strcmp(input, "N") != 0 && strcmp(input, "n") != 0){
@@ -66,7 +66,7 @@ double maxThrust(double fuel){
     return max;
 }
 
-double limitAutoThrust(double thrust){
+double limitAutoThrust(double thrust){ // cap thrust at 45000 in the first few seconds of autopilot flight
     if(thrust > 45000){
         return 45000;
     }
@@ -134,14 +134,13 @@ int main(){
     fprintf(output, "%d,%.0lf,%.1lf,%.1lf\n", time++, thrust, s.altitude, (s.velocity * -100));
 
     while(s.altitude > 0){
-        int input;
 
         // N indicates autopilot mode has been chosen
         if(isAuto == 1){
             thrust = Autopilot(s);
         }
         else{
-                        
+            int input;
             printf("Enter thrust in kN: ");
             scanf("%i", &input);
             thrust = ((double)input * 1000);
@@ -172,6 +171,7 @@ int main(){
     }
 
     fclose(output);
+    system("python LunarPlot.py");
     keypress();
     return 0;
 }
