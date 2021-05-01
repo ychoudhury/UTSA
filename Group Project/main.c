@@ -94,6 +94,7 @@ double Autopilot(State s){
 
     double vf = -0.9;
     double Hf = 5;
+    double max = maxThrust(s.fuel);
 
     if(s.velocity > 0){ // do nothing if velocity is positive to avoid flying away
         return 0;
