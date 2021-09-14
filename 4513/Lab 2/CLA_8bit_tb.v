@@ -1,6 +1,25 @@
 `timescale 1ns / 1ps
 
 
+//module CLA_GP_tb;
+//reg A = 0;
+//reg B = 0;
+//wire G, P;
+
+////UUT
+//CLA_GP CLA1(G, P, A, B);
+
+//initial begin
+//A = 1'b0; B = 1'b0; // G = 0, P = 0
+//#30
+//A = 1'b0; B = 1'b1; // G = 0 , P = 1
+//#30
+//A = 1'b1; B = 1'b0; // G = 0, P = 1
+//#30
+//A = 1'b1; B = 1'b1; // G = 1, P = 0
+//end
+//endmodule
+
 //module PFA_tb;
 //reg A = 0;
 //reg B = 0;
