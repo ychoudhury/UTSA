@@ -3,44 +3,52 @@
 
 module Memory_64byte(D_IN, ADDR, R_ENABLE, W_ENABLE, RESET, CLK, D_OUT);
 
-input [7:0] D_IN; // MDR
-input [2:0] ADDR; // MAR
-input R_ENABLE, W_ENABLE, RESET, CLK;
-output [7:0] D_OUT;
+input [63:0] D_IN = 0; // MDR
+input [2:0] ADDR = 0; // MAR
+input R_ENABLE, W_ENABLE, RESET, CLK = 0;
+output [63:0] D_OUT;
 
-reg [7:0] mem [2:0]; // 8-bit wide and 8 deep memory block (64 Bytes)
-reg [7:0] x;
+reg [7:0] mem [63:0]; // 8-bit wide and 64 deep memory block (64 Bytes)
+reg [63:0] x; // intermediate wire to carry output
 
-integer i; // used to clear row of memory
+integer i, j; // used to clear row of memory
 
 always @(posedge CLK) begin
 
-    if(RESET) begin // clear memory
-        x <= 8'b0000000;
-        
+    if(RESET) begin // clear all memory locations
+        for(i = 0; i <= 64; i = i + 1) begin
+            mem[i] <= 8'b00000000;
         end
+        x = 8'b00000000;
+    end
             
-    else if(R_ENABLE) begin
-        if(ADDR >= 3'b000 && ADDR <= 3'b111) begin //check if valid address is given
+    else if(R_ENABLE) begin // give read operation priority
+        if(ADDR >= 3'b000 && ADDR <= 3'b111) begin // check if valid address is given
                 x = mem[ADDR];
         end
+        
         else begin
-            x = 8'bZZZZZZZZ; // read disable will not return valid values
+            x = 'hZ; // read disable will not return valid values
         end
     end
     
     else if(W_ENABLE) begin
         if(ADDR >= 3'b000 && ADDR <= 3'b111) begin
-                x <= D_IN; // non-blocking statement to immediately move all input into specified address
+                mem[ADDR] <= D_IN; // non-blocking statement to immediately move all input into specified address
+                x = 8'bZZZZZZZZ; // not reading anything, so output high impedance is not mistaken for 0 data
         end
         else begin
-        // NOP
+            x = 8'bZZZZZZZZ; // testing purposes
         end
     end
-    $display("Time = %0t, Data In = %8b, Address = %3b, Read Enable = %1b, Write Enable = %1b, Reset = %1b, Data Out = %8b", $time, D_IN, ADDR, R_ENABLE, W_ENABLE, RESET, D_OUT);
-    end
+    $display("Time = %0t, Data In = %4h Address = %3b, Read Enable = %1b, Write Enable = %1b, Reset = %1b, Data Out = %4h", $time, D_IN, ADDR, R_ENABLE, W_ENABLE, RESET, D_OUT);
+//    for(i = 0; i <= 8; i = i + 1) begin
+//        $display("Contents of Memory Address [%0d] = %8b", i, mem[i]);       
+//    end
+    
+end
 
-   assign D_OUT = x;
+assign D_OUT = x;
    
 
 endmodule
