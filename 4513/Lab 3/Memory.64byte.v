@@ -4,14 +4,14 @@
 module Memory_64byte(D_IN, ADDR, R_ENABLE, W_ENABLE, RESET, CLK, D_OUT);
 
 input [7:0] D_IN = 0; // MDR
-input [7:0] ADDR = 0; // MAR
+input [63:0] ADDR = 0; // MAR
 input R_ENABLE, W_ENABLE, RESET, CLK = 0;
 output [7:0] D_OUT;
 
 reg [7:0] mem [63:0]; // 8-bit wide and 64 deep memory block (64 Bytes)
 reg [7:0] x; // intermediate wire to carry output
 
-integer i, j;
+integer i, j; // used for $display console output
 
 always @(posedge CLK) begin
 
@@ -23,7 +23,7 @@ always @(posedge CLK) begin
     end
             
     else if(R_ENABLE) begin // give read operation priority
-        if(ADDR >= 8'b000 && ADDR <= 8'b111) begin
+        if(ADDR >= 'd0 && ADDR <= 'd64) begin
                 x = mem[ADDR];
         end
        
@@ -41,7 +41,7 @@ always @(posedge CLK) begin
         
     end
     
-    $display("Time = %0t, Data In = %4h Address = %3b, Read Enable = %1b, Write Enable = %1b, Reset = %1b, Data Out = %4h", $time, D_IN, ADDR, R_ENABLE, W_ENABLE, RESET, D_OUT);
+    $display("Time = %0t, Data In = %8b, Address = %0d, Read Enable = %1b, Write Enable = %1b, Reset = %1b, Data Out = %8b", $time, D_IN, ADDR, R_ENABLE, W_ENABLE, RESET, D_OUT);
     for(i = 0; i < 64; i = i + 1) begin
         $display("Contents of Memory Address [%0d] = %8b", i, mem[i]);       
     end
