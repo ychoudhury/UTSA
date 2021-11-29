@@ -2,9 +2,9 @@
 
 
 
-module cpuops(i_clk, i_reset, i_op, i_a, i_b, o_c, 
+module cpuops(i_clk, i_reset, i_op, i_a, i_b, o_c,
 
-              mantissa_sum, mantissa_shift, i_a_mantissa, i_b_mantissa);
+              mantissa_sum, mantissa_shift, i_a_mantissa, i_b_mantissa, count);
 
 input wire i_clk, i_reset;
 input wire [3:0] i_op;
@@ -26,8 +26,12 @@ reg [22:0] o_c_mantissa;
 
 output reg [24:0] mantissa_sum;
 output reg [23:0] mantissa_shift;
+output reg [23:0] count;
 
 reg [31:0] add_result;
+
+reg isNormal = 1'b0;
+integer i;
 
 always @(posedge i_clk) begin
 
@@ -41,37 +45,85 @@ always @(posedge i_clk) begin
     i_a_mantissa <= {1'b1, i_a[22:0]}; // prepend implied 1 before msb of mantissa
     i_b_mantissa <= {1'b1, i_b[22:0]};
     
-    // calculate mantissa
+    
+    // initialize mantissa registers
+    mantissa_shift <= 24'b0;
+    mantissa_sum <= 25'b0;
+    count <= 24'b0;
+    isNormal <= 1'b0; // flag
+    
+    // a exponent > b exponent
     if(i_a_exponent > i_b_exponent) begin
+    
+        // add aligned mantissas together
         mantissa_shift = (i_b_mantissa >> (i_a_exponent - i_b_exponent));
         mantissa_sum = (mantissa_shift + i_a_mantissa);
-        o_c_sign <= 1'b0; // this is a temporary hard-code while we figure out exp and mantissa
         
-        if(mantissa_sum[24] == 1'b1) begin
-            o_c_mantissa <= (mantissa_sum << 1); //bug here
-            o_c_exponent <= (i_a_exponent + 1'b1);
+        // normalize mantissas
+        for(i = 24; i > 0; i = i - 1) begin   
+            if(isNormal == 1'b0) begin
+                if(mantissa_sum[i] == 0) begin
+                    count = (count + 1);
+                end
+            end  
+        isNormal = 1'b1;
         end
         
-        else if(mantissa_sum[24] != 1'b1) begin
-            o_c_mantissa <= mantissa_sum; //bug here
-            o_c_exponent <= i_a_exponent;
+        o_c_sign = 1'b0; // this is a temporary hard-code while we figure out exp and mantissa 
+        o_c_exponent = (i_a_exponent >> count);
+        o_c_mantissa = (mantissa_sum << count);
+    end
+    
+    // b exponent > a exponent
+    else if(i_a_exponent < i_b_exponent) begin
+        mantissa_shift = (i_a_mantissa >> (i_b_exponent - i_a_exponent));
+        mantissa_sum = (mantissa_shift + i_b_mantissa);
+    
+        for(i = 24; i > 0; i = i - 1) begin   
+            if(isNormal == 1'b0) begin
+                if(mantissa_sum[i] == 0) begin
+                    count = (count + 1);
+                end
+            end   
+        isNormal = 1'b1;
         end
+        
+        o_c_sign = 1'b0; // this is a temporary hard-code while we figure out exp and mantissa 
+        o_c_exponent = (i_b_exponent >> count);
+        o_c_mantissa = (mantissa_sum << count);                     
+    end
+    
+    // same exponents: no mantissa shift needed
+    else if(i_a_exponent == i_b_exponent) begin
+        mantissa_sum <= (i_a_mantissa + i_b_mantissa);
+     
+        for(i = 24; i > 0; i = i - 1) begin 
+            if(mantissa_sum[i] == 0) begin
+                count = (count + 1);
+            end
+        isNormal = 25 - count;
+        end
+        
+        o_c_sign = 1'b0;
+        o_c_exponent = i_a_exponent + isNormal;
+        o_c_mantissa = mantissa_sum << isNormal;
+    end
+    
+    else begin
+        $display("Error: Unreachable condition");
     end
 
-add_result = {o_c_sign, o_c_exponent, o_c_mantissa}; // packing
+// pack the final result
+add_result = {o_c_sign, o_c_exponent, o_c_mantissa}; 
 
 end
-
 
 always @(posedge i_clk) begin
 
     casez(i_op)
-    
-    4'b0001: o_c = add_result[31:0];
-
+    4'b0001: o_c <= add_result[31:0];
     endcase
     
-
 end
 
 endmodule
