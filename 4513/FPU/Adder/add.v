@@ -12,11 +12,11 @@ input wire [31:0] input_b;
 input input_b_stb;
 output input_b_ack;
 
-  output    [31:0] output_z;
-  output    output_z_stb;
-  output reg    idle_status;
-  output reg output_valid;
-  input     ack_output;
+output wire [31:0] output_z;
+output output_z_stb;
+output reg idle_status;
+output reg output_valid;
+input wire ack_output;
 
   reg       s_output_z_stb;
   reg       [31:0] s_output_z;
