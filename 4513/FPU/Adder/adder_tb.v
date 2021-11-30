@@ -8,7 +8,9 @@ wire [31:0] output_z;
 reg clk;
 reg rst;
 reg start;
-reg input_a_stb, input_b_stb, ack_output;
+reg input_a_stb;
+reg input_b_stb;
+reg ack_output;
 
 //UUT
 adder A1(input_a,
