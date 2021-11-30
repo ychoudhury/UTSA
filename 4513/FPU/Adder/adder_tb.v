@@ -8,14 +8,14 @@ wire [31:0] output_z;
 reg clk;
 reg rst;
 reg start;
-reg input_a_stb, input_b_stb, output_z_ack;
+reg input_a_stb, input_b_stb, ack_output;
 
 //UUT
 adder A1(input_a,
         input_b,
         input_a_stb,
         input_b_stb,
-        output_z_ack,
+        ack_output,
         clk,
         rst,
         start,
@@ -32,7 +32,7 @@ clk <= 1'b0;
 rst <= 1'b0;
 input_a_stb <= 1'b1;
 input_b_stb <= 1'b1;
-output_z_ack <= 1'b1;
+ack_output <= 1'b1;
 end
          
 always #10 clk = ~clk;
