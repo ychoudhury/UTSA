@@ -1,15 +1,13 @@
-module adder(input_a, input_b, start, ack_output, clk, rst, output_z, output_valid, idle_status, input_a_stb, input_b_stb, output_z_stb, input_a_ack, input_b_ack);
+module adder(input_a, input_b, start, ack_output, clk, rst, output_z, output_valid, idle_status, output_z_stb, input_a_ack, input_b_ack);
 
 input wire clk;
 input wire rst;
 input wire start;
 
 input wire [31:0] input_a;
-input input_a_stb;
 output input_a_ack;
 
 input wire [31:0] input_b;
-input input_b_stb;
 output input_b_ack;
 
 output wire [31:0] output_z;
@@ -65,7 +63,7 @@ reg [27:0] sum;
       get_a:
       begin
         s_input_a_ack <= 1;
-        if (s_input_a_ack && input_a_stb) begin
+        if (s_input_a_ack) begin
           a <= input_a;
           s_input_a_ack <= 0;
           state <= get_b;
@@ -75,7 +73,7 @@ reg [27:0] sum;
       get_b:
       begin
         s_input_b_ack <= 1;
-        if (s_input_b_ack && input_b_stb) begin
+        if (s_input_b_ack) begin
           b <= input_b;
           s_input_b_ack <= 0;
           state <= unpack;
