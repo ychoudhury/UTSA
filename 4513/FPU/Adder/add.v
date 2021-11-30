@@ -18,35 +18,35 @@ output reg idle_status;
 output reg output_valid;
 input wire ack_output;
 
-  reg       s_output_z_stb;
-  reg       [31:0] s_output_z;
-  reg       s_input_a_ack;
-  reg       s_input_b_ack;
+reg s_output_z_stb;
+reg [31:0] s_output_z;
+reg s_input_a_ack;
+reg s_input_b_ack;
 
-  reg       [3:0] state   = 4'd0;
-  
-  parameter idle          = 4'd0,
-            get_a         = 4'd1,
-            get_b         = 4'd2,
-            unpack        = 4'd3,
-            special_cases = 4'd4,
-            align         = 4'd5,
-            add_0         = 4'd6,
-            add_1         = 4'd7,
-            normalise_1   = 4'd8,
-            normalise_2   = 4'd9,
-            round         = 4'd10,
-            pack          = 4'd11,
-            put_z         = 4'd12,
-            setOutputValid = 4'd13;
+reg [3:0] state   = 4'd0;
 
-  reg       [31:0] a, b, z;
-  reg       [26:0] a_m, b_m;
-  reg       [23:0] z_m;
-  reg       [9:0] a_e, b_e, z_e;
-  reg       a_s, b_s, z_s;
-  reg       guard, round_bit, sticky;
-  reg       [27:0] sum;
+parameter idle           = 4'd0,
+          get_a          = 4'd1,
+          get_b          = 4'd2,
+          unpack         = 4'd3,
+          special_cases  = 4'd4,
+          align          = 4'd5,
+          add_0          = 4'd6,
+          add_1          = 4'd7,
+          normalise_1    = 4'd8,
+          normalise_2    = 4'd9,
+          round          = 4'd10,
+          pack           = 4'd11,
+          put_z          = 4'd12,
+          setOutputValid = 4'd13;
+
+reg [31:0] a, b, z;
+reg [26:0] a_m, b_m;
+reg [23:0] z_m;
+reg [9:0] a_e, b_e, z_e;
+reg a_s, b_s, z_s;
+reg guard, round_bit, sticky;
+reg [27:0] sum;
 
   always @(posedge clk)
   begin
@@ -103,7 +103,8 @@ input wire ack_output;
           z[21:0] <= 0;
           state <= put_z;
         //if a is inf return inf
-        end else if (a_e == 128) begin
+        end
+        else if (a_e == 128) begin
           z[31] <= a_s;
           z[30:23] <= 255;
           z[22:0] <= 0;
@@ -116,40 +117,47 @@ input wire ack_output;
           end
           state <= put_z;
         //if b is inf return inf
-        end else if (b_e == 128) begin
+        end 
+        else if (b_e == 128) begin
           z[31] <= b_s;
           z[30:23] <= 255;
           z[22:0] <= 0;
           state <= put_z;
         //if a is zero return b
-        end else if ((($signed(a_e) == -127) && (a_m == 0)) && (($signed(b_e) == -127) && (b_m == 0))) begin
+        end 
+        else if ((($signed(a_e) == -127) && (a_m == 0)) && (($signed(b_e) == -127) && (b_m == 0))) begin
           z[31] <= a_s & b_s;
           z[30:23] <= b_e[7:0] + 127;
           z[22:0] <= b_m[26:3];
           state <= put_z;
         //if a is zero return b
-        end else if (($signed(a_e) == -127) && (a_m == 0)) begin
+        end 
+        else if (($signed(a_e) == -127) && (a_m == 0)) begin
           z[31] <= b_s;
           z[30:23] <= b_e[7:0] + 127;
           z[22:0] <= b_m[26:3];
           state <= put_z;
         //if b is zero return a
-        end else if (($signed(b_e) == -127) && (b_m == 0)) begin
+        end 
+        else if (($signed(b_e) == -127) && (b_m == 0)) begin
           z[31] <= a_s;
           z[30:23] <= a_e[7:0] + 127;
           z[22:0] <= a_m[26:3];
           state <= put_z;
-        end else begin
+        end 
+        else begin
           //Denormalised Number
           if ($signed(a_e) == -127) begin
             a_e <= -126;
-          end else begin
+          end 
+          else begin
             a_m[26] <= 1;
           end
           //Denormalised Number
           if ($signed(b_e) == -127) begin
             b_e <= -126;
-          end else begin
+          end 
+          else begin
             b_m[26] <= 1;
           end
           state <= align;
@@ -162,11 +170,13 @@ input wire ack_output;
           b_e <= b_e + 1;
           b_m <= b_m >> 1;
           b_m[0] <= b_m[0] | b_m[1];
-        end else if ($signed(a_e) < $signed(b_e)) begin
+        end 
+        else if ($signed(a_e) < $signed(b_e)) begin
           a_e <= a_e + 1;
           a_m <= a_m >> 1;
           a_m[0] <= a_m[0] | a_m[1];
-        end else begin
+        end 
+        else begin
           state <= add_0;
         end
       end
@@ -177,11 +187,13 @@ input wire ack_output;
         if (a_s == b_s) begin
           sum <= a_m + b_m;
           z_s <= a_s;
-        end else begin
+        end 
+        else begin
           if (a_m >= b_m) begin
             sum <= a_m - b_m;
             z_s <= a_s;
-          end else begin
+          end 
+          else begin
             sum <= b_m - a_m;
             z_s <= b_s;
           end
@@ -197,7 +209,8 @@ input wire ack_output;
           round_bit <= sum[2];
           sticky <= sum[1] | sum[0];
           z_e <= z_e + 1;
-        end else begin
+        end 
+        else begin
           z_m <= sum[26:3];
           guard <= sum[2];
           round_bit <= sum[1];
@@ -214,7 +227,8 @@ input wire ack_output;
           z_m[0] <= guard;
           guard <= round_bit;
           round_bit <= 0;
-        end else begin
+        end 
+        else begin
           state <= normalise_2;
         end
       end
@@ -227,7 +241,8 @@ input wire ack_output;
           guard <= z_m[0];
           round_bit <= guard;
           sticky <= sticky | round_bit;
-        end else begin
+        end 
+        else begin
           state <= round;
         end
       end
