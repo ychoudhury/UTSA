@@ -51,7 +51,8 @@ module adder(
             normalise_2   = 4'd9,
             round         = 4'd10,
             pack          = 4'd11,
-            put_z         = 4'd12;
+            put_z         = 4'd12,
+            setOutputValid = 4'd13;
 
   reg       [31:0] a, b, z;
   reg       [26:0] a_m, b_m;
@@ -282,17 +283,26 @@ module adder(
         s_output_z <= z;
         if (s_output_z_stb && ack_output) begin
           s_output_z_stb <= 0;
-          state <= get_a;
+          state <= setOutputValid;
         end
+      end
+      
+      setOutputValid:
+      begin
+      output_valid <= 1;
+        if (output_valid == 1'd1 && ack_output == 1'd1) begin
+          output_valid <= 0;
+          state <= idle;
+        end
+
       end
 
     endcase
 
     if (rst == 1) begin
-      state <= get_a;
-      s_input_a_ack <= 0;
-      s_input_b_ack <= 0;
-      s_output_z_stb <= 0;
+      state <= idle;
+      idle_status <= 0;
+      output_valid <= 0;
     end
 
   end
