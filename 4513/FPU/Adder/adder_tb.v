@@ -8,22 +8,18 @@ wire [31:0] output_z;
 reg clk;
 reg rst;
 reg start;
-reg input_a_stb;
-reg input_b_stb;
 reg ack_output;
 wire idle_status;
 wire output_valid;
 
 //UUT
-adder A1(input_a, input_b, start, ack_output, clk, rst, output_z, output_valid, idle_status, input_a_stb, input_b_stb, output_z_stb, input_a_ack, input_b_ack);
+adder A1(input_a, input_b, start, ack_output, clk, rst, output_z, output_valid, idle_status, output_z_stb, input_a_ack, input_b_ack);
         
 initial begin
 input_a <= 32'b0;
 input_b <= 32'b0;
 clk <= 1'b0;
 rst <= 1'b0;
-input_a_stb <= 1'b1;
-input_b_stb <= 1'b1;
 ack_output <= 1'b1;
 start <= 1'd1;
 end
