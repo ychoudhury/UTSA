@@ -11,6 +11,7 @@ reg start;
 reg input_a_stb;
 reg input_b_stb;
 reg ack_output;
+wire idle_status;
 
 //UUT
 adder A1(input_a,
@@ -24,7 +25,8 @@ adder A1(input_a,
         output_z,
         output_z_stb,
         input_a_ack,
-        input_b_ack
+        input_b_ack,
+        idle_status
 );
         
 initial begin
@@ -35,6 +37,7 @@ rst <= 1'b0;
 input_a_stb <= 1'b1;
 input_b_stb <= 1'b1;
 ack_output <= 1'b1;
+start <= 1'd1;
 end
          
 always #10 clk = ~clk;
