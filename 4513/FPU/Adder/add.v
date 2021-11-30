@@ -1,4 +1,4 @@
-module adder(input_a, input_b, input_a_stb, input_b_stb, ack_output, clk, rst, start, output_z, output_z_stb, input_a_ack, input_b_ack, idle_status, output_valid);
+module adder(input_a, input_b, start, ack_output, clk, rst, output_z, output_valid, idle_status, input_a_stb, input_b_stb, output_z_stb, input_a_ack, input_b_ack);
 
 input wire clk;
 input wire rst;
