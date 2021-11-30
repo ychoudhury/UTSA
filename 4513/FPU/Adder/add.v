@@ -10,11 +10,12 @@ module adder(
         output_z,
         output_z_stb,
         input_a_ack,
-        input_b_ack);
+        input_b_ack,
+        idle_status);
 
   input     clk;
   input     rst;
-  input     start;
+  input wire    start;
 
   input     [31:0] input_a;
   input     input_a_stb;
@@ -26,6 +27,7 @@ module adder(
 
   output    [31:0] output_z;
   output    output_z_stb;
+  output reg    idle_status;
   input     ack_output;
 
   reg       s_output_z_stb;
@@ -33,19 +35,21 @@ module adder(
   reg       s_input_a_ack;
   reg       s_input_b_ack;
 
-  reg       [3:0] state = 4'b0000;
-  parameter get_a         = 4'd0,
-            get_b         = 4'd1,
-            unpack        = 4'd2,
-            special_cases = 4'd3,
-            align         = 4'd4,
-            add_0         = 4'd5,
-            add_1         = 4'd6,
-            normalise_1   = 4'd7,
-            normalise_2   = 4'd8,
-            round         = 4'd9,
-            pack          = 4'd10,
-            put_z         = 4'd11;
+  reg       [3:0] state   = 4'd0;
+  
+  parameter idle          = 4'd0,
+            get_a         = 4'd1,
+            get_b         = 4'd2,
+            unpack        = 4'd3,
+            special_cases = 4'd4,
+            align         = 4'd5,
+            add_0         = 4'd6,
+            add_1         = 4'd7,
+            normalise_1   = 4'd8,
+            normalise_2   = 4'd9,
+            round         = 4'd10,
+            pack          = 4'd11,
+            put_z         = 4'd12;
 
   reg       [31:0] a, b, z;
   reg       [26:0] a_m, b_m;
@@ -59,6 +63,15 @@ module adder(
   begin
 
     case(state)
+    
+      idle:
+      begin
+      idle_status <= 1'b1;
+      if(start == 1'd1) begin
+        idle_status <= 1'b0;
+        state <= get_a;
+        end
+      end
 
       get_a:
       begin
