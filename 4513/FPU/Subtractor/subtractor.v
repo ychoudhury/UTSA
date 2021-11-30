@@ -1,67 +1,67 @@
-module subtractor(
-        input_a,
-        input_b,
-        input_a_stb,
-        input_b_stb,
-        output_z_ack,
-        clk,
-        rst,
-        output_z,
-        output_z_stb,
-        input_a_ack,
-        input_b_ack);
+module subtractor(input_a, input_b, start, ack_output, clk, rst, output_z, output_valid, idle_status);
 
-  input     clk;
-  input     rst;
+input wire clk;
+input wire rst;
+input wire start;
 
-  input     [31:0] input_a;
-  input     input_a_stb;
-  output    input_a_ack;
+input wire [31:0] input_a;
+reg input_a_ack;
 
-  input     [31:0] input_b;
-  input     input_b_stb;
-  output    input_b_ack;
+input wire [31:0] input_b;
+reg input_b_ack;
 
-  output    [31:0] output_z;
-  output    output_z_stb;
-  input     output_z_ack;
+output wire [31:0] output_z;
+output reg idle_status;
+output reg output_valid;
+input wire ack_output;
 
-  reg       s_output_z_stb;
-  reg       [31:0] s_output_z;
-  reg       s_input_a_ack;
-  reg       s_input_b_ack;
+reg [31:0] s_output_z;
+reg s_input_a_ack;
+reg s_input_b_ack;
 
-  reg       [3:0] state = 4'b0000;
-  parameter get_a         = 4'd0,
-            get_b         = 4'd1,
-            unpack        = 4'd2,
-            special_cases = 4'd3,
-            align         = 4'd4,
-            add_0         = 4'd5,
-            add_1         = 4'd6,
-            normalise_1   = 4'd7,
-            normalise_2   = 4'd8,
-            round         = 4'd9,
-            pack          = 4'd10,
-            put_z         = 4'd11;
+reg [3:0] state   = 4'd0;
 
-  reg       [31:0] a, b, z;
-  reg       [26:0] a_m, b_m;
-  reg       [23:0] z_m;
-  reg       [9:0] a_e, b_e, z_e;
-  reg       a_s, b_s, z_s;
-  reg       guard, round_bit, sticky;
-  reg       [27:0] sum;
+parameter idle           = 4'd0,
+          get_a          = 4'd1,
+          get_b          = 4'd2,
+          unpack         = 4'd3,
+          special_cases  = 4'd4,
+          align          = 4'd5,
+          add_0          = 4'd6,
+          add_1          = 4'd7,
+          normalise_1    = 4'd8,
+          normalise_2    = 4'd9,
+          round          = 4'd10,
+          pack           = 4'd11,
+          put_z          = 4'd12,
+          setOutputValid = 4'd13;
+
+reg [31:0] a, b, z;
+reg [26:0] a_m, b_m;
+reg [23:0] z_m;
+reg [9:0] a_e, b_e, z_e;
+reg a_s, b_s, z_s;
+reg guard, round_bit, sticky;
+reg [27:0] sum;
 
   always @(posedge clk)
   begin
 
     case(state)
+    
+      idle:
+      begin
+      idle_status <= 1'b1;
+      if(start == 1'd1) begin
+        idle_status <= 1'b0;
+        state <= get_a;
+        end
+      end
 
       get_a:
       begin
         s_input_a_ack <= 1;
-        if (s_input_a_ack && input_a_stb) begin
+        if (s_input_a_ack) begin
           a <= input_a;
           s_input_a_ack <= 0;
           state <= get_b;
@@ -71,7 +71,7 @@ module subtractor(
       get_b:
       begin
         s_input_b_ack <= 1;
-        if (s_input_b_ack && input_b_stb) begin
+        if (s_input_b_ack) begin
           b <= input_b;
           s_input_b_ack <= 0;
           state <= unpack;
@@ -99,7 +99,8 @@ module subtractor(
           z[21:0] <= 0;
           state <= put_z;
         //if a is inf return inf
-        end else if (a_e == 128) begin
+        end
+        else if (a_e == 128) begin
           z[31] <= a_s;
           z[30:23] <= 255;
           z[22:0] <= 0;
@@ -112,40 +113,47 @@ module subtractor(
           end
           state <= put_z;
         //if b is inf return -inf
-        end else if (b_e == 128) begin
+        end 
+        else if (b_e == 128) begin
           z[31] <= 1'b1; // sign = 1 for negative infinity
           z[30:23] <= 255;
           z[22:0] <= 0;
           state <= put_z;
         //if a is zero return -b
-        end else if ((($signed(a_e) == -127) && (a_m == 0)) && (($signed(b_e) == -127) && (b_m == 0))) begin
+        end 
+        else if ((($signed(a_e) == -127) && (a_m == 0)) && (($signed(b_e) == -127) && (b_m == 0))) begin
           z[31] <= ~(a_s & b_s);
           z[30:23] <= b_e[7:0] + 127;
           z[22:0] <= b_m[26:3];
           state <= put_z;
-        //if a is zero return -b
-        end else if (($signed(a_e) == -127) && (a_m == 0)) begin
+        //if a is zero return b
+        end 
+        else if (($signed(a_e) == -127) && (a_m == 0)) begin
           z[31] <= ~b_s;
           z[30:23] <= b_e[7:0] + 127;
           z[22:0] <= b_m[26:3];
           state <= put_z;
         //if b is zero return a
-        end else if (($signed(b_e) == -127) && (b_m == 0)) begin
+        end 
+        else if (($signed(b_e) == -127) && (b_m == 0)) begin
           z[31] <= a_s;
           z[30:23] <= a_e[7:0] + 127;
           z[22:0] <= a_m[26:3];
           state <= put_z;
-        end else begin
+        end 
+        else begin
           //Denormalised Number
           if ($signed(a_e) == -127) begin
             a_e <= -126;
-          end else begin
+          end 
+          else begin
             a_m[26] <= 1;
           end
           //Denormalised Number
           if ($signed(b_e) == -127) begin
             b_e <= -126;
-          end else begin
+          end 
+          else begin
             b_m[26] <= 1;
           end
           state <= align;
@@ -158,11 +166,13 @@ module subtractor(
           b_e <= b_e + 1;
           b_m <= b_m >> 1;
           b_m[0] <= b_m[0] | b_m[1];
-        end else if ($signed(a_e) < $signed(b_e)) begin
+        end 
+        else if ($signed(a_e) < $signed(b_e)) begin
           a_e <= a_e + 1;
           a_m <= a_m >> 1;
           a_m[0] <= a_m[0] | a_m[1];
-        end else begin
+        end 
+        else begin
           state <= add_0;
         end
       end
@@ -173,11 +183,13 @@ module subtractor(
         if (a_s == b_s) begin
           sum <= a_m - b_m;
           z_s <= a_s;
-        end else begin
+        end 
+        else begin
           if (a_m >= b_m) begin
             sum <= a_m - b_m;
             z_s <= a_s;
-          end else begin
+          end 
+          else begin
             sum <= b_m - a_m;
             z_s <= b_s;
           end
@@ -193,7 +205,8 @@ module subtractor(
           round_bit <= sum[2];
           sticky <= sum[1] | sum[0];
           z_e <= z_e + 1;
-        end else begin
+        end 
+        else begin
           z_m <= sum[26:3];
           guard <= sum[2];
           round_bit <= sum[1];
@@ -210,7 +223,8 @@ module subtractor(
           z_m[0] <= guard;
           guard <= round_bit;
           round_bit <= 0;
-        end else begin
+        end 
+        else begin
           state <= normalise_2;
         end
       end
@@ -223,7 +237,8 @@ module subtractor(
           guard <= z_m[0];
           round_bit <= guard;
           sticky <= sticky | round_bit;
-        end else begin
+        end 
+        else begin
           state <= round;
         end
       end
@@ -261,27 +276,32 @@ module subtractor(
 
       put_z:
       begin
-        s_output_z_stb <= 1;
         s_output_z <= z;
-        if (s_output_z_stb && output_z_ack) begin
-          s_output_z_stb <= 0;
-          state <= get_a;
+          state <= setOutputValid;
+      end
+      
+      setOutputValid:
+      begin
+      output_valid <= 1;
+        if (output_valid == 1'd1 && ack_output == 1'd1) begin
+          output_valid <= 0;
+          state <= idle;
         end
+
       end
 
     endcase
 
     if (rst == 1) begin
-      state <= get_a;
-      s_input_a_ack <= 0;
-      s_input_b_ack <= 0;
-      s_output_z_stb <= 0;
+      state <= idle;
+      idle_status <= 0;
+      output_valid <= 0;
+      s_output_z <= 0;
     end
 
   end
-  assign input_a_ack = s_input_a_ack;
-  assign input_b_ack = s_input_b_ack;
-  assign output_z_stb = s_output_z_stb;
+//  assign input_a_ack = s_input_a_ack;
+//  assign input_b_ack = s_input_b_ack;
   assign output_z = s_output_z;
 
 endmodule
