@@ -11,7 +11,8 @@ module adder(
         output_z_stb,
         input_a_ack,
         input_b_ack,
-        idle_status);
+        idle_status,
+        output_valid);
 
   input     clk;
   input     rst;
@@ -28,6 +29,7 @@ module adder(
   output    [31:0] output_z;
   output    output_z_stb;
   output reg    idle_status;
+  output reg output_valid;
   input     ack_output;
 
   reg       s_output_z_stb;
