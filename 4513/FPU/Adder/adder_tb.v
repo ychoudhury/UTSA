@@ -5,7 +5,9 @@ module adder_tb;
 reg [31:0] input_a;
 reg [31:0] input_b;
 wire [31:0] output_z;
-reg clk, rst;
+reg clk;
+reg rst;
+reg start;
 reg input_a_stb, input_b_stb, output_z_ack;
 
 //UUT
@@ -16,6 +18,7 @@ adder A1(input_a,
         output_z_ack,
         clk,
         rst,
+        start,
         output_z,
         output_z_stb,
         input_a_ack,
