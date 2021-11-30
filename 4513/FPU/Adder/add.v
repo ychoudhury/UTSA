@@ -3,7 +3,7 @@ module adder(
         input_b,
         input_a_stb,
         input_b_stb,
-        output_z_ack,
+        ack_output,
         clk,
         rst,
         start,
@@ -26,7 +26,7 @@ module adder(
 
   output    [31:0] output_z;
   output    output_z_stb;
-  input     output_z_ack;
+  input     ack_output;
 
   reg       s_output_z_stb;
   reg       [31:0] s_output_z;
@@ -265,7 +265,7 @@ module adder(
       begin
         s_output_z_stb <= 1;
         s_output_z <= z;
-        if (s_output_z_stb && output_z_ack) begin
+        if (s_output_z_stb && ack_output) begin
           s_output_z_stb <= 0;
           state <= get_a;
         end
