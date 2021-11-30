@@ -277,9 +277,7 @@ reg [27:0] sum;
       put_z:
       begin
         s_output_z <= z;
-        if (ack_output) begin
           state <= setOutputValid;
-        end
       end
       
       setOutputValid:
@@ -298,6 +296,7 @@ reg [27:0] sum;
       state <= idle;
       idle_status <= 0;
       output_valid <= 0;
+      s_output_z <= 0;
     end
 
   end
