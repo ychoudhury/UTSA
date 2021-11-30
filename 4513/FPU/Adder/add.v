@@ -1,22 +1,8 @@
-module adder(
-        input_a,
-        input_b,
-        input_a_stb,
-        input_b_stb,
-        ack_output,
-        clk,
-        rst,
-        start,
-        output_z,
-        output_z_stb,
-        input_a_ack,
-        input_b_ack,
-        idle_status,
-        output_valid);
+module adder(input_a, input_b, input_a_stb, input_b_stb, ack_output, clk, rst, start, output_z, output_z_stb, input_a_ack, input_b_ack, idle_status, output_valid);
 
-  input     clk;
-  input     rst;
-  input wire    start;
+input wire clk;
+input wire rst;
+input wire start;
 
   input     [31:0] input_a;
   input     input_a_stb;
