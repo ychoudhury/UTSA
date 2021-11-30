@@ -6,6 +6,7 @@ module adder(
         output_z_ack,
         clk,
         rst,
+        start,
         output_z,
         output_z_stb,
         input_a_ack,
@@ -13,6 +14,7 @@ module adder(
 
   input     clk;
   input     rst;
+  input     start;
 
   input     [31:0] input_a;
   input     input_a_stb;
