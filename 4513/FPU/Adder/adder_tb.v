@@ -13,7 +13,7 @@ wire idle_status;
 wire output_valid;
 
 //UUT
-adder A1(input_a, input_b, start, ack_output, clk, rst, output_z, output_valid, idle_status, input_a_ack, input_b_ack);
+adder A1(input_a, input_b, start, ack_output, clk, rst, output_z, output_valid, idle_status);
         
 initial begin
 input_a <= 32'b0;
