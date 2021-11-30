@@ -1,4 +1,4 @@
-module adder(input_a, input_b, start, ack_output, clk, rst, output_z, output_valid, idle_status, output_z_stb, input_a_ack, input_b_ack);
+module adder(input_a, input_b, start, ack_output, clk, rst, output_z, output_valid, idle_status, input_a_ack, input_b_ack);
 
 input wire clk;
 input wire rst;
@@ -11,12 +11,10 @@ input wire [31:0] input_b;
 output input_b_ack;
 
 output wire [31:0] output_z;
-output output_z_stb;
 output reg idle_status;
 output reg output_valid;
 input wire ack_output;
 
-reg s_output_z_stb;
 reg [31:0] s_output_z;
 reg s_input_a_ack;
 reg s_input_b_ack;
@@ -278,10 +276,8 @@ reg [27:0] sum;
 
       put_z:
       begin
-        s_output_z_stb <= 1;
         s_output_z <= z;
-        if (s_output_z_stb && ack_output) begin
-          s_output_z_stb <= 0;
+        if (ack_output) begin
           state <= setOutputValid;
         end
       end
@@ -307,7 +303,6 @@ reg [27:0] sum;
   end
   assign input_a_ack = s_input_a_ack;
   assign input_b_ack = s_input_b_ack;
-  assign output_z_stb = s_output_z_stb;
   assign output_z = s_output_z;
 
 endmodule
