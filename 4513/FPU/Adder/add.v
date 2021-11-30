@@ -1,14 +1,14 @@
-module adder(input_a, input_b, start, ack_output, clk, rst, output_z, output_valid, idle_status, input_a_ack, input_b_ack);
+module adder(input_a, input_b, start, ack_output, clk, rst, output_z, output_valid, idle_status);
 
 input wire clk;
 input wire rst;
 input wire start;
 
 input wire [31:0] input_a;
-output input_a_ack;
+reg input_a_ack;
 
 input wire [31:0] input_b;
-output input_b_ack;
+reg input_b_ack;
 
 output wire [31:0] output_z;
 output reg idle_status;
@@ -301,8 +301,8 @@ reg [27:0] sum;
     end
 
   end
-  assign input_a_ack = s_input_a_ack;
-  assign input_b_ack = s_input_b_ack;
+//  assign input_a_ack = s_input_a_ack;
+//  assign input_b_ack = s_input_b_ack;
   assign output_z = s_output_z;
 
 endmodule
