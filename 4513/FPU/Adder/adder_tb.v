@@ -12,6 +12,7 @@ reg input_a_stb;
 reg input_b_stb;
 reg ack_output;
 wire idle_status;
+wire output_valid;
 
 //UUT
 adder A1(input_a,
@@ -26,7 +27,8 @@ adder A1(input_a,
         output_z_stb,
         input_a_ack,
         input_b_ack,
-        idle_status
+        idle_status,
+        output_valid
 );
         
 initial begin
