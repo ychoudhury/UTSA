@@ -1,3 +1,23 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 11/30/2021 12:41:47 PM
+// Design Name: 
+// Module Name: fpu
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
 module fpu(i_clk, i_reset, i_start, i_operation, i_a, i_b,
 		o_busy, o_valid, o_err, o_output, o_flags);
 	input	wire		i_clk, i_reset;
@@ -42,7 +62,7 @@ module fpu(i_clk, i_reset, i_start, i_operation, i_a, i_b,
 	
 
 	
-    FPADD instantiation_name0(modules_a[0], modules_b[0],
+    adder instantiation_name0(modules_a[0], modules_b[0],
         modules_start[0],
         modules_ack[0],
         i_clk,
@@ -50,7 +70,7 @@ module fpu(i_clk, i_reset, i_start, i_operation, i_a, i_b,
         w_modules_output[0],
         w_modules_output_ready[0],
         w_modules_idle[0]);
-    FPSUB instantiation_name1(modules_a[1], modules_b[1],
+    subtractor instantiation_name1(modules_a[1], modules_b[1],
         modules_start[1],
         modules_ack[1],
         i_clk,
@@ -58,7 +78,7 @@ module fpu(i_clk, i_reset, i_start, i_operation, i_a, i_b,
         w_modules_output[1],
         w_modules_output_ready[1],
         w_modules_idle[1]);
-    FPF2I instantiation_name2(modules_a[2],
+    FPI2F instantiation_name2(modules_a[2],
         modules_start[2],
         modules_ack[2],
         i_clk,
@@ -74,7 +94,7 @@ module fpu(i_clk, i_reset, i_start, i_operation, i_a, i_b,
         w_modules_output[3],
         w_modules_output_ready[3],
         w_modules_idle[3]);
-   FPDIV instantiation_name4(modules_a[4],
+   FPDIV instantiation_name4(modules_a[4], modules_b[4],
         modules_start[4],
         modules_ack[4],
         i_clk,
@@ -82,7 +102,7 @@ module fpu(i_clk, i_reset, i_start, i_operation, i_a, i_b,
         w_modules_output[4],
         w_modules_output_ready[4],
         w_modules_idle[4]);
-    FPMPY instantiation_name5(modules_a[5], modules_b[6],
+    FPMPY instantiation_name5(modules_a[5],modules_b[5],
         modules_start[5],
         modules_ack[5],
         i_clk,
@@ -208,6 +228,15 @@ module fpu(i_clk, i_reset, i_start, i_operation, i_a, i_b,
     end
 endmodule
 
+
+
+
+
+
+
+
+
+
 module FPF2I(input_a, start, ack_output, clk, rst, output_z, output_valid, idle_status);
 
   input  wire   [31:0] input_a;
@@ -306,7 +335,36 @@ module FPF2I(input_a, start, ack_output, clk, rst, output_z, output_valid, idle_
 
 endmodule
 
-module FPADD(input_a, input_b, start, ack_output, clk, rst, output_z, output_valid, idle_status);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module adder(input_a, input_b, start, ack_output, clk, rst, output_z, output_valid, idle_status);
 
 input wire clk;
 input wire rst;
@@ -614,7 +672,9 @@ reg [27:0] sum;
 
 endmodule
 
-module FPSUBTRACT(input_a, input_b, start, ack_output, clk, rst, output_z, output_valid, idle_status);
+
+
+module subtractor(input_a, input_b, start, ack_output, clk, rst, output_z, output_valid, idle_status);
 
 input wire clk;
 input wire rst;
@@ -922,6 +982,8 @@ reg [27:0] sum;
 
 endmodule
 
+
+
 module FPI2F(input_a, start, ack_output, clk, rst, output_z, output_valid, idle_status);
 
   input  wire   [31:0] input_a;
@@ -1038,6 +1100,19 @@ module FPI2F(input_a, start, ack_output, clk, rst, output_z, output_valid, idle_
     end
   end
 endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 module FPDIV(input [31:0]a,
                        input [31:0]b,
@@ -1254,7 +1329,9 @@ begin
 end
 endmodule
 
-module FPMPY(         input [31:0]a,
+
+module 
+FPMPY(         input [31:0]a,
                        input [31:0]b,
                        input start,
                        input ack_output,                                          
@@ -1506,3 +1583,5 @@ begin
 end
 
 endmodule
+
+
