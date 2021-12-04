@@ -1112,8 +1112,6 @@ endmodule
 
 
 
-
-
 module FPDIV(input [31:0]a,
                        input [31:0]b,
                        input start,
@@ -1122,7 +1120,9 @@ module FPDIV(input [31:0]a,
                        input rst,
                        output reg[31:0]y,
                        output reg output_valid,//1 for busy, 0 for ready
-                       output reg idle_status);
+                       output reg idle_status,
+                       output [24:0]div,
+                       output [47:0]a_o);
 //y=a/b
 reg [3:0] states;
 
@@ -1168,17 +1168,20 @@ begin
               a_t <= a;
               states <= verify_b;
               end
+              a_t[31:0] <= a[31:0];
+              states<=verify_b;
           end
     
          verify_b:
           begin
-              b_t <= b;
+              b_t[31:0] <= b[31:0];
               states <= seperate;
           end
          seperate:
           begin
           //pad leading zeroes of divdend 
-            a_m[23:0] <= {1'b1, a_t[22 : 0]};
+            a_m <= {1'b1,a_t[22:0]}<<24;
+ 
           //pad a leading zero and pad the rest for trailing zerosof divdend   
             b_m <= {1'b1,b_t[22 :0]};
             a_e <= a_t[30 : 23];
@@ -1251,43 +1254,47 @@ begin
             z_s <= a_s ^ b_s;
             // (n_a-127)-(n_b-127+127) so that you only get the portion you want to subtract
             // might need to check if it is the case where a_e<b_e
-            z_e <= a_e - b_e + 127;
+            
             //if value becomes huge which worst case would be
             //1.0000/1.0
-            if(a_m[23:0]<=b_m)
+            if((a_m>>24)<=b_m)
             begin
-                a_m=a_m>>1;
+                
                 //48 bits long with the 0's for padding now divide and add 1
-                a_m=a_m<<24;
-                div_result <=(a_m/b_m)+ 1'b1;
+               
+               z_e <= a_e - b_e + 126;
             end
             else //if the m1<m2 now we need to decrement the exponent
             begin
-                a_m=a_m<<24;
-                div_result <=(a_m/b_m);
-                z_e<=z_e-1'b1;
+             
+              z_e <= a_e - b_e + 127;
             end
+            
             states <= div_1;
           end
     
           div_1:
           begin
-            z_m <= div_result;
+          if((a_m[23:0]>>24)<=b_m)
+            begin
+            div_result<=(a_m/b_m);
+            end
+          else
+          begin
+          div_result<=(a_m&(48'hFFFFFE000000)/b_m)+1'b1;
+          end
             states <= normalise_1;
           end
           normalise_1:
           begin
-            if (z_m[23] == 0) begin
-              z_e <= z_e - 1;
-              z_m <= z_m << 1;
-            end else begin
+            
               states <= put_together;
-            end
+            
           end
         
           put_together:
           begin
-            z_t[22 : 0] <= z_m[22:0];
+            z_t[22 : 0] <= div_result[22:0];
             z_t[30 : 23] <= z_e[7:0];
             z_t[31] <= z_s;
            
@@ -1303,21 +1310,23 @@ begin
           begin
             z <= z_t;
             y <=z_t;
+            output_valid <= 1;
             states <= setOutputValid;
           end  
-          default:
-          begin
-          states <= verify_a;
-          end
+
          setOutputValid:
          begin
           output_valid <= 1;
            if (output_valid == 1'd1 && ack_output == 1'd1) begin
-          output_valid <= 0;
+                output_valid <= 0;
           states <= verify_a;
         end
 
          end
+         default:
+          begin
+          states <= verify_a;
+          end
         endcase
       if (rst == 1) begin
           states <= verify_a;
@@ -1327,7 +1336,10 @@ begin
     end
     
 end
+assign div=div_result;
+assign a_o=a_m;
 endmodule
+
 
 
 module 
@@ -1583,5 +1595,3 @@ begin
 end
 
 endmodule
-
-
