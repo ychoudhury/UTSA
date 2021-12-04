@@ -11,7 +11,7 @@ module fpu_tb;
     wire o_busy;
     wire o_valid;
     wire o_err;
-    wire [31:0] o_quotient;
+    wire [31:0] o_output;
     wire [3:0] o_flags;
 
     fpu instantiation_name(clk,
@@ -23,7 +23,7 @@ module fpu_tb;
         o_busy,
         o_valid,
         o_err,
-        o_quotient,
+        o_output,
         o_flags
         );
     
@@ -31,7 +31,7 @@ module fpu_tb;
       begin
         clk <= 1'b0;
         while (1) begin
-          #5 clk <= ~clk;
+          #30 clk <= ~clk;
         end
       end
       
@@ -80,8 +80,8 @@ module fpu_tb;
         arrValsA[6] = 32'h42480000; // 50.0
         arrValsB[6] = 32'h4159999A; // 13.6
         
-        arrValsA[7] = 32'hc348999a; // -200.6
-        arrValsB[7] = 32'h4159999A; // 512532
+        arrValsA[7] = 32'h4159999A; // 512532
+        arrValsB[7] = 32'h40200000; //2.5
         
         //VALUES FOR OP 2
         arrValsA[8] = 32'h00000002; //2
@@ -96,17 +96,17 @@ module fpu_tb;
         arrValsA[15] = 32'h00000000; // 0
         
         //VALUES FOR OP 4
-        arrValsA[16] = 32'b01000011001111101001010111000011; // 190.585
-        arrValsB[16] = 32'b01000000111010000000000000000000; // 7.25
+        arrValsA[16] = 32'h41cb999a; // 190.585
+        arrValsB[16] = 32'h425c0000; // 7.25
         
-        arrValsA[17] = 32'h40200000; //2.5
-        arrValsB[17] = 32'h40200000; //2.5
+        arrValsA[17] = 32'h41cb999a; // 190.585
+        arrValsB[17] = 32'h425c0000; // 7.25
         
-        arrValsA[18] = 32'hc348999a; //-200.6
-        arrValsB[18] = 32'h00000000; // 0
+        arrValsA[18] = 32'h41cb999a; // 190.585
+        arrValsB[18] = 32'h425c0000; // 7.25
         
-        arrValsA[19] = 32'h00000000; // 0
-        arrValsB[19] = 32'h00000000; // 0
+        arrValsA[19] = 32'h41cb999a; // 190.585
+        arrValsB[19] = 32'h425c0000; // 7.25
         
         //VALUES FOR OP 5
         arrValsA[20] = 32'h449a4000; //2.5
@@ -127,25 +127,25 @@ module fpu_tb;
     begin
         while(!valWrittenFlag)
         begin
-            #10;
+            #60;
         end
         for(i = 0; i < totalNumOfValues; i = i+1)
         begin
             while(o_busy == 1'b1) begin
-                #10;
+                #60;
             end
             rst = 1'b1;
-            #10;
+            #60;
             rst = 1'b0;
             while(o_busy != 1'b0) begin
-                #5;
+                #30;
             end
             if(i%4 == 0 && i > 3'd3)begin
                 i_signed = i_signed + 1;
             end
             input_a = arrValsA[i];
             input_b = arrValsB[i];
-            #15;
+            #90;
             start = 1'b1;
             while(o_valid != 1'b1) begin
                 #1;
@@ -154,5 +154,3 @@ module fpu_tb;
         end
     end
 endmodule
-
-
