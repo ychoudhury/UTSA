@@ -7,17 +7,13 @@ input wire c_in;
 
 output reg [7:0] out;
 output c_out;
-reg [7:0] SUM;
+wire [7:0] SUM;
 
-fa_8 fa_8_0(a, b, c_in, s, c_out);
+fa_8 fa_8_0(a, b, c_in, SUM[7:0], c_out);
 
-initial begin
-    SUM = s;
-end
 
     always@(*) begin
         case(sel)
-//            3'b000: out = a+b;              // add with c_in
             3'b000: out = SUM;              // add with c_in
             3'b001: out = a - b - c_in;     // sub with c_in
             3'b010: out = a | b;            // or
